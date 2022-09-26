@@ -1,0 +1,185 @@
+import {
+  Flex,
+  Box,
+  Text,
+  FormControl,
+  Input,
+  FormErrorIcon,
+  FormErrorMessage,
+  Button,
+} from "@chakra-ui/react";
+import api from "../../services/index";
+import * as yup from "yup";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { toast } from "react-toastify";
+import { useContext } from "react";
+import { contactContext } from "../../providers";
+
+const FormUpdateContact = ({ contactId, contacts }) => {
+  const { contactsState, setContactsState } = useContext(contactContext);
+  const userFind = contacts.find((item) => item.id === contactId);
+  const formSchema = yup.object().shape({
+    fullName: yup.string(),
+    email: yup.string().email("Email Inválido"),
+    email2: yup.string().email("Email Inválido"),
+    phone: yup.string(),
+    phone2: yup.string(),
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(formSchema),
+  });
+
+  const onSubmitFunction = async (data) => {
+    const updateUser = {
+      fullName: data.fullName ? data.fullName : userFind.fullName,
+      email: data.email ? data.email : userFind.email,
+      email2: data.email2 ? data.email2 : userFind.email2,
+      phone: data.phone ? data.phone : userFind.phone,
+      phone2: data.phone2 ? data.phone2 : userFind.phone2,
+    };
+    const user = localStorage.getItem("token");
+    await api
+      .patch(`/users/contacts/${contactId}`, updateUser, {
+        headers: {
+          Authorization: `Token ${user}`,
+        },
+      })
+      .then((response) => toast.success("Contato atualizado com sucesso"))
+      .catch((err) => console.log(err));
+
+    await api
+      .get(`/users/contacts`, {
+        headers: {
+          Authorization: `Token ${user}`,
+        },
+      })
+      .then((response) => {
+        setContactsState(response.data);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  return (
+    <Flex width="100%" display="flex" justifyContent="center">
+      <Box
+        width="90%"
+        display="flex"
+        flexDir="column"
+        bgColor="#FFF"
+        alignContent="center"
+        alignItems="center"
+        borderRadius="8px"
+      >
+        <Text
+          fontWeight="bold"
+          fontSize="20px"
+          marginTop="20px"
+          color="#2A4058"
+        >
+          Editar Contato
+        </Text>
+        <form onSubmit={handleSubmit(onSubmitFunction)}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            w="100%"
+          >
+            <FormControl padding="12px" isInvalid={errors.fullname}>
+              <Input
+                borderColor="#855050"
+                width="100%"
+                placeholder="Nome completo"
+                {...register("fullName")}
+                color="black"
+              />
+              <FormErrorMessage>
+                <FormErrorIcon />
+                {errors.fullName && errors.fullName.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl padding="12px" isInvalid={errors.email}>
+              <Input
+                borderColor="#855050"
+                width="100%"
+                placeholder="Insira seu e-mail"
+                {...register("email")}
+                color="black"
+              />
+              <FormErrorMessage>
+                <FormErrorIcon />
+                {errors.email && errors.email.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl padding="12px" isInvalid={errors.email2}>
+              <Input
+                borderColor="#855050"
+                width="100%"
+                placeholder="Segundo e-mail"
+                {...register("email2")}
+                color="black"
+              />
+              <FormErrorMessage>
+                <FormErrorIcon />
+                {errors.email2 && errors.email2.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl padding="12px" isInvalid={errors.phone}>
+              <Input
+                borderColor="#855050"
+                width="100%"
+                placeholder="Telefone ou Celular"
+                {...register("phone")}
+                color="black"
+              />
+              <FormErrorMessage>
+                <FormErrorIcon />
+                {errors.phone && errors.phone.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl padding="12px" isInvalid={errors.phone2}>
+              <Input
+                borderColor="#855050"
+                width="100%"
+                placeholder="Telefone ou celular"
+                {...register("phone2")}
+                color="black"
+              />
+              <FormErrorMessage>
+                <FormErrorIcon />
+                {errors.phone2 && errors.phone2.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <Button
+              width="100%"
+              marginTop="20px"
+              type="submit"
+              colorScheme="#2c2121"
+              color="white"
+              bgColor="#2A4058"
+              marginBottom="20px"
+              _hover={{
+                background: "#FFF",
+                color: "#000",
+                border: "2px solid #000000",
+              }}
+            >
+              Atulizar Contato
+            </Button>
+          </Box>
+        </form>
+      </Box>
+    </Flex>
+  );
+};
+export default FormUpdateContact;
