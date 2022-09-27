@@ -42,20 +42,13 @@ const FormAddContact = ({ listContacts, setTeste, onClose }) => {
           Authorization: `Token ${user}`,
         },
       })
-      .then((response) => toast.success("Contato adicionado com sucesso"))
-      .catch((error) => toast.error(error.response.data.message));
-
-    await api
-      .get(`/users/contacts`, {
-        headers: {
-          Authorization: `Token ${user}`,
-        },
-      })
       .then((response) => {
-        setContactsState(response.data);
+        setContactsState([...contactsState, response.data]);
+        toast.success("Contato adicionado com sucesso");
       })
-      .catch((err) => console.log(err));
+      .catch((error) => toast.error(error.response.data.message));
   };
+  
   const submitFunction = () => {
     onClose();
     setTeste(true);
